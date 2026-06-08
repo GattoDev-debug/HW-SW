@@ -1,5 +1,10 @@
 # HW-SW
 CPU, PPU and an APU all made in Godot.
+
+
+https://github.com/user-attachments/assets/ad15be89-5ccf-495f-bfed-0d37f29dd91e
+
+
 # Notes
 This goddamn thing runs at ~10FPS.
 
