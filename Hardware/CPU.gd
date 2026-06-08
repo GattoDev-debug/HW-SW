@@ -63,7 +63,6 @@ func _process(delta):
 
 	apu.pulse1_volume = 0.08 + abs(sin(t * 4.0)) * 0.05
 	apu.pulse2_volume = 0.04 + abs(cos(t * 2.0)) * 0.04
-	apu.triangle_volume = 0.03
 
 	apu.noise_enabled = (sin(t * 12.0) > 0.92)
 
