@@ -22,7 +22,7 @@ func tick(delta: float):
 	update_text()
 
 	if Input.is_action_just_pressed("ui_page_down"):
-		cpu.panic("MANUAL CRASH")
+		cpu.panic("short crash reason","full crash reason")
 func update_text() -> void:
 
 
