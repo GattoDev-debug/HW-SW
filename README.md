@@ -6,7 +6,7 @@ https://github.com/user-attachments/assets/ad15be89-5ccf-495f-bfed-0d37f29dd91e
 
 
 # Notes
-Check `"./Hardware/ROM.gd"` for code example.
+Check `"./Software/ROM.gd"` for code example.
 
 All 3 Hardware files have documentation.
 ## "Why?"
