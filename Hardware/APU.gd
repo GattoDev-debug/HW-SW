@@ -24,7 +24,7 @@ var playback: AudioStreamGeneratorPlayback
 
 ## CHANNEL REGISTERS
 
-
+var cpu: CPU
 ## Pulse channel 1
 var pulse1_enabled := true
 var pulse1_freq := 440.0

@@ -6,11 +6,9 @@ https://github.com/user-attachments/assets/ad15be89-5ccf-495f-bfed-0d37f29dd91e
 
 
 # Notes
-This goddamn thing runs at ~10FPS.
+Check `"./Hardware/ROM.gd"` for code example.
 
-Check `"./Hardware/CPU.gd"` for code example.
-
-All 3 .gd files have documentation.
+All 3 Hardware files have documentation.
 ## "Why?"
 Why not! I was bored, cmon!
 

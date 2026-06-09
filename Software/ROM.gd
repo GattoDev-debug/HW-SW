@@ -5,7 +5,7 @@ class_name ROM
 
 var ppu: PPU
 var apu: APU
-
+var cpu: CPU
 var t := 0.0
 
 func _enter_tree() -> void:
@@ -19,8 +19,18 @@ func tick(delta: float):
 
 	update_audio()
 	update_graphics()
+	update_text()
+
+	if Input.is_action_just_pressed("ui_page_down"):
+		cpu.panic("MANUAL CRASH")
+func update_text() -> void:
 
 
+	ppu.text(8, 15, "APU DEBUG", Color.WHITE)
+	ppu.text(8, 25, "P1 F: %s V: %s" % [apu.pulse1_freq, apu.pulse1_volume], Color.WHITE)
+	ppu.text(8, 35, "P2 F: %s V: %s" % [apu.pulse2_freq, apu.pulse2_volume], Color.WHITE)
+	ppu.text(8, 45, "TRI F: %s" % apu.triangle_freq, Color.WHITE)
+	ppu.text(8, 55, "NOISE: %s" % apu.noise_enabled, Color.WHITE)
 func update_audio():
 
 	apu.pulse1_freq = 220 + sin(t * 2.0) * 180
@@ -82,8 +92,7 @@ func draw_rotating_square(
 	cy: float,
 	size: float,
 	angle: float,
-	color: Color
-):
+	color: Color):
 
 	var half = size / 2.0
 
@@ -118,8 +127,7 @@ func draw_rotating_triangle(
 	cy: float,
 	size: float,
 	angle: float,
-	color: Color
-):
+	color: Color):
 
 	var points = []
 
