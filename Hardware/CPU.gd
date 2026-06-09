@@ -30,14 +30,13 @@ func _ready():
 	rom = ROM.new()
 
 	## connect hardware to ROM
-	rom.ppu = ppu
-	rom.apu = apu
-	rom.cpu = self
+	if "ppu" in rom:
+		rom.ppu = ppu
+	if "apu" in rom:
+		rom.apu = apu
+	if "cpu" in rom:
+		rom.cpu = self
 	add_child(rom)
-
-
-
-
 func _process(delta):
 
 	if crashed:
