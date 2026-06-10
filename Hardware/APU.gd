@@ -26,7 +26,7 @@ var playback: AudioStreamGeneratorPlayback
 
 var cpu: CPU
 ## Pulse channel 1
-var pulse1_enabled := true
+var pulse1_enabled := false
 var pulse1_freq := 440.0
 var pulse1_volume := 0.15
 var pulse1_duty := 0.5
