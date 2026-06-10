@@ -8,8 +8,6 @@ func _enter_tree() -> void:
 	name = "ROM"
 func tick(delta: float):
 	test_font()
-	ppu.text(8,90,"shimmy shimmy yay shimmy yay shimmy yay",Color.WHITE)
-	ppu.text(8,120,"drake (swalalala) drake (swalalala)",Color.WHITE)
 func test_font() -> void:
 	var chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 :.-%s()!?,'\"+*=/=#@_<>[]&;^~|\\"
 	var x = 8

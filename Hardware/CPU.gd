@@ -28,7 +28,6 @@ func _ready():
 
 	## load ROM
 	rom = ROM.new()
-
 	## connect hardware to ROM
 	if "ppu" in rom:
 		rom.ppu = ppu
@@ -37,6 +36,8 @@ func _ready():
 	if "cpu" in rom:
 		rom.cpu = self
 	add_child(rom)
+	await get_tree().process_frame 	
+	if rom.name != "ROM": panic("ROM NAME MISMATCH")
 func _process(delta):
 
 	if crashed:
@@ -62,23 +63,17 @@ func resume():
 
 	print("CPU RESUMED")
 ## Panic! Crashes Game.
-func panic(short_reason: String,full_reason : String = short_reason):
-
+func panic(short_reason: String,full_reason : String = ""):
 	crashed = true
 	halted = true
-
-	print("CPU PANIC")
-	
-
 	emit_signal("cpu_panic", short_reason)
-
 	show_panic_screen(short_reason,full_reason)
-func show_panic_screen(short_reason: String,full_reason: String = short_reason):
+func show_panic_screen(short_reason: String,full_reason: String):
 	#ppu.test_pattern()
 	await get_tree().process_frame
-	ppu.rectfill(4, 4, 120, 16, Color.BLACK)
-	ppu.rectfill(4, 20, 240, 16, Color.BLACK)
-	ppu.rectfill(4, 45, 240, 16, Color.BLACK)
+	ppu.rectfill(4, 4, 256, 16, Color.BLACK)
+	ppu.rectfill(4, 20, 256, 16, Color.BLACK)
+	ppu.rectfill(4, 45, 256, 16, Color.BLACK)
 	await get_tree().process_frame
 	ppu.text(
 		8,

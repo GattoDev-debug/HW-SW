@@ -603,7 +603,6 @@ func pget(x: int, y: int) -> Color:
 
 	if y < 0 or y >= HEIGHT:
 		return Color.BLACK
-
 	return framebuffer[y * WIDTH + x]
 
 

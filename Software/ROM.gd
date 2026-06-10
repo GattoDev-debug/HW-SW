@@ -16,13 +16,12 @@ func _enter_tree() -> void:
 func tick(delta: float):
 
 	t += delta
-
 	update_audio()
 	update_graphics()
 	update_text()
 
 	if Input.is_action_just_pressed("ui_page_down"):
-		cpu.panic("short crash reason","full crash reason")
+		cpu.panic("MANUAL CRASH")
 func update_text() -> void:
 
 
