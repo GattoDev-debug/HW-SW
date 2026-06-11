@@ -27,7 +27,6 @@ buses/default_bus_layout=""
 
 window/size/viewport_width=256
 window/size/viewport_height=256
-window/size/resizable=false
 window/stretch/mode="viewport"
 
 [dotnet]
