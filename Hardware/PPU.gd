@@ -799,7 +799,8 @@ func text(
 	x: int,
 	y: int,
 	str: Variant,
-	color: Color = Color.WHITE
+	color: Color = Color.WHITE,
+	scale: int = 1
 ) -> void:
 
 	var cursor_x = x
@@ -808,21 +809,15 @@ func text(
 	for char in str:
 		if not FONT.has(char):
 			char = "?"
-		draw_char(
-			cursor_x,
-			y,
-			char,
-			color
-		)
-
-		cursor_x += 6
-		
+		draw_char(cursor_x, y, char, color, scale)
+		cursor_x += 6 * scale
 ## Helper for text()
 func draw_char(
 	x: int,
 	y: int,
 	char: String,
-	color: Color
+	color: Color,
+	scale: int = 1
 ) -> void:
 
 	if not FONT.has(char):
@@ -837,11 +832,13 @@ func draw_char(
 		for px in range(row.length()):
 
 			if row[px] == "1":
-				pset(
-					x + px,
-					y + py,
-					color
-				)
+				for sy in range(scale):
+					for sx in range(scale):
+						pset(
+							x + px * scale + sx,
+							y + py * scale + sy,
+							color
+						)
 ## Debug test pattern
 func test_pattern() -> void:
 
