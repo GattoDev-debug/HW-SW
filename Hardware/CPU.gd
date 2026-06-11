@@ -63,7 +63,7 @@ func resume():
 
 	print("CPU RESUMED")
 ## Panic! Crashes Game.
-func panic(short_reason: String,full_reason : String = ""):
+func panic(short_reason: String = "",full_reason : String = ""):
 	crashed = true
 	halted = true
 	emit_signal("cpu_panic", short_reason)
@@ -72,8 +72,10 @@ func show_panic_screen(short_reason: String,full_reason: String):
 	#ppu.test_pattern()
 	await get_tree().process_frame
 	ppu.rectfill(4, 4, 256, 16, Color.BLACK)
-	ppu.rectfill(4, 20, 256, 16, Color.BLACK)
-	ppu.rectfill(4, 45, 256, 16, Color.BLACK)
+	if not short_reason == "":
+		ppu.rectfill(4, 20, 256, 16, Color.BLACK)
+	if not full_reason == "":
+		ppu.rectfill(4, 45, 256, 16, Color.BLACK)
 	await get_tree().process_frame
 	ppu.text(
 		8,
