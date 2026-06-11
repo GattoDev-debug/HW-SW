@@ -799,7 +799,7 @@ func text(
 	x: int,
 	y: int,
 	str: Variant,
-	color: Color
+	color: Color = Color.WHITE
 ) -> void:
 
 	var cursor_x = x

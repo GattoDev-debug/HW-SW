@@ -25,11 +25,11 @@ func tick(delta: float):
 func update_text() -> void:
 
 
-	ppu.text(8, 15, "APU DEBUG", Color.WHITE)
-	ppu.text(8, 25, "P1 F: %s V: %s" % [apu.pulse1_freq, apu.pulse1_volume], Color.WHITE)
-	ppu.text(8, 35, "P2 F: %s V: %s" % [apu.pulse2_freq, apu.pulse2_volume], Color.WHITE)
-	ppu.text(8, 45, "TRI F: %s" % apu.triangle_freq, Color.WHITE)
-	ppu.text(8, 55, "NOISE: %s" % apu.noise_enabled, Color.WHITE)
+	ppu.text(8, 15, "APU DEBUG")
+	ppu.text(8, 25, "P1 F: %s V: %s" % [apu.pulse1_freq, apu.pulse1_volume])
+	ppu.text(8, 35, "P2 F: %s V: %s" % [apu.pulse2_freq, apu.pulse2_volume])
+	ppu.text(8, 45, "TRI F: %s" % apu.triangle_freq)
+	ppu.text(8, 55, "NOISE: %s" % apu.noise_enabled)
 func update_audio():
 
 	apu.pulse1_freq = 220 + sin(t * 2.0) * 180
