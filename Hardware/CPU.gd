@@ -3,12 +3,18 @@ class_name CPU
 
 ## CPU (Central Processing Unit)
 
+## Picture Processing Unit
 var ppu: PPU
+## Audio Processing Unit
 var apu: APU
+## Read Only Memory
 var rom: ROM
+## Is game paused?
 var halted := false
+## Tells any listening nodes that the game has crashed.
 signal cpu_panic(reason)
 
+## Did game crash?
 var crashed := false
 
 func _ready():
@@ -52,11 +58,13 @@ func _process(delta):
 		return
 
 	rom.tick(delta)
+## Pauses game execution.
 func halt():
 
 	halted = true
 
 	print("CPU HALTED")
+## Resumes game execution.
 func resume():
 
 	halted = false
@@ -68,6 +76,7 @@ func panic(short_reason: String = "",full_reason : String = ""):
 	halted = true
 	emit_signal("cpu_panic", short_reason)
 	show_panic_screen(short_reason,full_reason)
+## Helper for panic()
 func show_panic_screen(short_reason: String,full_reason: String):
 	#ppu.test_pattern()
 	await get_tree().process_frame
