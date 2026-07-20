@@ -25,3 +25,9 @@ func write(byte : int,content : int) -> void:
 	if byte > size:
 		cpu.panic("OUT OF BOUNDS MEMORY")
 	memory.set(byte,content)
+## Decrease certain byte by count.
+func dec(byte : int, count : int)->void:
+	write(byte,read(byte)-count)
+## Increase certain byte by count.
+func inc(byte : int, count: int)->void:
+	write(byte,read(byte)+count)
