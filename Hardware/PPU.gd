@@ -861,7 +861,8 @@ func text(
 	y: int,
 	str: Variant,
 	color: Color = Color.WHITE,
-	scale: int = 1
+	scale: int = 1,
+	bg: Color = Color.TRANSPARENT
 ) -> void:
 
 	var cursor_x = x
@@ -870,6 +871,7 @@ func text(
 	for char in str:
 		if not FONT.has(char):
 			char = "?"
+		if bg.a > 0: rectfill(cursor_x,y,4*scale,5*scale,bg)
 		draw_char(cursor_x, y, char, color, scale)
 		cursor_x += 6 * scale
 ## Helper for text()
