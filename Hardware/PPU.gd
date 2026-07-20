@@ -657,7 +657,68 @@ func rect(x: int, y: int, w: int, h: int, color: Color) -> void:
 	line(x + w, y, x + w, y + h, color)
 	line(x + w, y + h, x, y + h, color)
 	line(x, y + h, x, y, color)
+## Rectangle outline but is rotatable
+func rectrot(cx: float,cy: float,size: float,angle: float,color: Color):
 
+	var half = size / 2.0
+
+	var points = [
+		Vector2(-half, -half),
+		Vector2( half, -half),
+		Vector2( half,  half),
+		Vector2(-half,  half)
+	]
+
+	for i in range(points.size()):
+
+		points[i] = points[i].rotated(angle)
+		points[i] += Vector2(cx, cy)
+
+	for i in range(4):
+
+		var a = points[i]
+		var b = points[(i + 1) % 4]
+
+		line(
+			int(a.x),
+			int(a.y),
+			int(b.x),
+			int(b.y),
+			color
+		)
+## Triangle outline but is rotatable
+func trianglerot(
+	cx: float,
+	cy: float,
+	size: float,
+	angle: float,
+	color: Color):
+
+	var points = []
+
+	for i in range(3):
+
+		var a = angle + (TAU / 3.0) * i
+
+		points.append(
+			Vector2(
+				cos(a) * size,
+				sin(a) * size
+			) + Vector2(cx, cy)
+		)
+
+	triangle(
+		int(points[0].x),
+		int(points[0].y),
+
+		int(points[1].x),
+		int(points[1].y),
+
+		int(points[2].x),
+		int(points[2].y),
+
+		color
+	)
 
 
 ## Draws filled rectangle
