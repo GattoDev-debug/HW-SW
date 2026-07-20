@@ -543,7 +543,7 @@ func _ready() -> void:
 		framebuffer[i] = Color.BLACK
 
 	## Create image
-	image = Image.create(
+	image = Image.create_empty(
 		WIDTH,
 		HEIGHT,
 		false,
@@ -844,7 +844,6 @@ func test_pattern() -> void:
 
 	for y in range(HEIGHT):
 		for x in range(WIDTH):
-
 			pset(
 				x,
 				y,

@@ -45,13 +45,15 @@ class_name ROM
 var ppu: PPU
 var apu: APU
 var cpu: CPU
-
+var ram: RAM
 func _enter_tree() -> void:
-    name = "ROM"
+	name = "ROM"
 
 func tick(delta: float):
-    ppu.clear(Color.BLACK)
-    ppu.text(8, 8, "HELLO WORLD", Color.WHITE)
+	ppu.clear(Color.BLACK)
+	ppu.text(8, 8, "HELLO WORLD", Color.WHITE)
+	ram.write(1,2)
+	ppu.text(2,2,ram.read(1))
 ```
 
 Full guide: **[Writing a ROM](../../wiki/Writing-a-ROM)**
@@ -61,6 +63,7 @@ Full guide: **[Writing a ROM](../../wiki/Writing-a-ROM)**
 ## Documentation
 
 - [CPU](../../wiki/CPU) — lifecycle, halt, panic
+- [RAM](../../wiki/RAM) — memory
 - [PPU](../../wiki/PPU) — framebuffer, drawing functions, font
 - [APU](../../wiki/APU) — channels, waveforms, register interface
 - [Writing a ROM](../../wiki/Writing-a-ROM) — how to write programs for the system
