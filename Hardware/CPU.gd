@@ -65,10 +65,7 @@ func _process(delta):
 		return
 	#if "-" in str(rom.t): panic("NEGATIVE TIME")
 	ppu.clear()
-	ram.write(ram.size-1,Performance.get_monitor(Performance.TIME_FPS))
-
 	rom.tick(delta)
-	ram.write(ram.size-1,Performance.get_monitor(Performance.TIME_FPS))
 ## Pauses game execution.
 func halt():
 

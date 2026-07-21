@@ -15,6 +15,9 @@ func clear() -> void:
 func _ready() -> void:
 	name = "RAM"
 	clear()
+## Handles reserved RAM slots.
+func _process(delta : float) -> void:
+	write(size-1,Performance.get_monitor(Performance.TIME_FPS))
 ## Reads a specific byte in memory.
 func read(byte : int) -> int:
 	if byte > size-1:
