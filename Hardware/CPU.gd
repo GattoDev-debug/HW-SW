@@ -2,13 +2,13 @@ extends Node
 class_name CPU
 
 ## CPU (Central Processing Unit)
-
+@export_file("*.gd") var rom_file : String = "res://Software/ROM.gd"
 ## Picture Processing Unit
 var ppu: PPU
 ## Audio Processing Unit
 var apu: APU
 ## Read Only Memory
-var rom: ROM
+var rom: Node
 ## Random Access Memory
 var ram: RAM
 ## Is game paused?
@@ -19,7 +19,7 @@ signal cpu_panic(reason)
 var crashed := false
 
 func _ready():
-
+	rom = prepare_rom(rom_file)
 	get_window().size = Vector2(512, 512)
 	get_window().move_to_center()
 
@@ -34,10 +34,8 @@ func _ready():
 	add_child(ppu)
 	add_child(apu)
 	add_child(ram)
+	
 
-
-	## load ROM
-	rom = ROM.new()
 	## connect hardware to ROM
 	if "ppu" in rom: rom.ppu = ppu
 	if "apu" in rom: rom.apu = apu
@@ -52,7 +50,7 @@ func _ready():
 	# RAM SELF TEST END
 	add_child(rom)
 	await get_tree().process_frame 	
-	if rom.name != "ROM": panic("ROM NAME MISMATCH")
+	if rom.name != "ROM": panic("ROM FAIL", "PLEASE SET ROM IN CPU FILE")
 func _process(delta):
 
 	if crashed:
@@ -113,3 +111,7 @@ func show_panic_screen(short_reason: String,full_reason: String):
 		full_reason,
 		Color.WHITE
 	)
+func prepare_rom(rom_path : String) -> Node:
+	var node = Node.new()
+	node.set_script(load(rom_path))
+	return node

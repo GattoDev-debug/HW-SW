@@ -4,3 +4,4 @@
 
 [node name="CPU" type="Node" unique_id=887586906]
 script = ExtResource("1_ig7tw")
+rom_file = "uid://dqo412ep46mdn"
