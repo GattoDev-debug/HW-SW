@@ -19,8 +19,7 @@ func tick(delta: float):
 	update_graphics()
 	update_text()
 
-	if Input.is_action_just_pressed("ui_page_down"):
-		cpu.panic("MANUAL CRASH")
+	if Input.is_action_just_pressed("ui_page_down"):cpu.panic("MANUAL CRASH")
 func update_text() -> void:
 
 

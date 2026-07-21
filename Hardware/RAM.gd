@@ -17,12 +17,12 @@ func _ready() -> void:
 	clear()
 ## Reads a specific byte in memory.
 func read(byte : int) -> int:
-	if byte > size:
+	if byte > size-1:
 		cpu.panic("OUT OF BOUNDS MEMORY")
 	return memory.get(byte)
 ## Writes to a specific byte in memory.
 func write(byte : int,content : int) -> void:
-	if byte > size:
+	if byte > size-1:
 		cpu.panic("OUT OF BOUNDS MEMORY")
 	memory.set(byte,content)
 ## Decrease certain byte by count.

@@ -65,7 +65,10 @@ func _process(delta):
 		return
 	#if "-" in str(rom.t): panic("NEGATIVE TIME")
 	ppu.clear()
+	ram.write(ram.size-1,Performance.get_monitor(Performance.TIME_FPS))
+
 	rom.tick(delta)
+	ram.write(ram.size-1,Performance.get_monitor(Performance.TIME_FPS))
 ## Pauses game execution.
 func halt():
 
@@ -80,37 +83,57 @@ func resume():
 	print("CPU RESUMED")
 ## Panic! Crashes Game.
 func panic(short_reason: String = "",full_reason : String = ""):
+	ppu.clear()
 	crashed = true
 	halted = true
-	emit_signal("cpu_panic", short_reason)
 	show_panic_screen(short_reason,full_reason)
+	emit_signal("cpu_panic", short_reason)
 ## Helper for panic()
-func show_panic_screen(short_reason: String,full_reason: String):
-	#ppu.test_pattern()
+func show_panic_screen(short_reason: String, full_reason: String):
 	await get_tree().process_frame
-	ppu.rectfill(4, 4, 256, 16, Color.BLACK)
-	if not short_reason == "": ppu.rectfill(4, 20, 256, 16, Color.BLACK)
-	if not full_reason == "":ppu.rectfill(4, 45, 256, 16, Color.BLACK)
-	await get_tree().process_frame
-	ppu.text(
-		8,
-		8,
-		"ILLEGAL INSTRUCTION",
-		Color.WHITE
-	)
 
-	ppu.text(
-		8,
-		24,
-		short_reason,
-		Color.WHITE
-	)
-	ppu.text(
-		8,
-		50,
-		full_reason,
-		Color.WHITE
-	)
+	ppu.text(8, 8, "ILLEGAL INSTRUCTION", Color.WHITE)
+	ppu.text(8, 24, short_reason, Color.WHITE)
+	ppu.text(8, 40, full_reason, Color.WHITE)
+
+	var bytes_per_row := 8
+	var y := 64
+	var skipped_rows := false
+
+	for start_addr in range(0, ram.size, bytes_per_row):
+		var has_data := false
+
+		# Does this row contain any non-zero bytes?
+		for i in range(bytes_per_row):
+			var addr := start_addr + i
+			if addr < ram.size and ram.read(addr) != 0:
+				has_data = true
+				break
+
+		# Skip empty rows
+		if !has_data:
+			skipped_rows = true
+			continue
+
+		if skipped_rows:
+			ppu.text(8, y, "...")
+			y += 8
+			skipped_rows = false
+
+		var line := "%02X: " % start_addr
+
+		for i in range(bytes_per_row):
+			var addr := start_addr + i
+			if addr >= ram.size:
+				break
+
+			line += "%02X " % ram.read(addr)
+
+		ppu.text(8, y, line, Color.WHITE)
+		y += 8
+
+		if y >= ppu.HEIGHT - 8:
+			break
 func prepare_rom(rom_path : String) -> Node:
 	var node = Node.new()
 	node.set_script(load(rom_path))
