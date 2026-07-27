@@ -67,3 +67,5 @@ Full guide: **[Writing a ROM](../../wiki/Writing-a-ROM)**
 - [PPU](../../wiki/PPU) — framebuffer, drawing functions, font
 - [APU](../../wiki/APU) — channels, waveforms, register interface
 - [Writing a ROM](../../wiki/Writing-a-ROM) — how to write programs for the system
+
+*psst* If you want something that works with PPU's `sprite()` function but don't want to spend time, check out [this](https://gattodev-debug.github.io/HW-SW/Tools/sprite.html) tool!
