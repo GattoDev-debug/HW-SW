@@ -521,8 +521,12 @@ var texture: ImageTexture
 ## Display sprite
 var display: Sprite2D
 
-## Fake VRAM / framebuffer
-var framebuffer := []
+## Fake VRAM / framebuffer.
+## Stored as raw RGBA8 bytes (same layout the Image/Texture use) instead of
+## an Array of Color. This avoids Variant boxing on every pixel write and
+## lets us upload the whole frame to the GPU in a single call instead of
+## calling into the Image API per-pixel.
+var framebuffer: PackedByteArray = PackedByteArray()
 
 ## True if image changed this frame
 var dirty := false
@@ -535,12 +539,11 @@ func _ready() -> void:
 
 	name = "PPU"
 
-	## Allocate framebuffer
-	framebuffer.resize(WIDTH * HEIGHT)
+	## Allocate framebuffer (RGBA8 = 4 bytes per pixel)
+	framebuffer.resize(WIDTH * HEIGHT * 4)
 
-	## Fill framebuffer
-	for i in range(framebuffer.size()):
-		framebuffer[i] = Color.BLACK
+	## Fill framebuffer (fast doubling fill, see clear())
+	clear(Color.BLACK)
 
 	## Create image
 	image = Image.create_empty(
@@ -550,7 +553,7 @@ func _ready() -> void:
 		Image.FORMAT_RGBA8
 	)
 
-	image.fill(Color.BLACK)
+	image.set_data(WIDTH, HEIGHT, false, Image.FORMAT_RGBA8, framebuffer)
 
 	## Create texture
 	texture = ImageTexture.create_from_image(image)
@@ -564,11 +567,14 @@ func _ready() -> void:
 
 
 
-## Upload texture only when modified
+## Upload texture only when modified.
+## This is the only place that touches the Image/Texture API now -
+## everything else writes straight into the raw framebuffer bytes.
 func _process(_delta):
 
 	if dirty:
 
+		image.set_data(WIDTH, HEIGHT, false, Image.FORMAT_RGBA8, framebuffer)
 		texture.update(image)
 
 		dirty = false
@@ -585,11 +591,14 @@ func pset(x: int, y: int, color: Color) -> void:
 	if y < 0 or y >= HEIGHT:
 		return
 
-	## Store in framebuffer
-	framebuffer[y * WIDTH + x] = color
+	## Write directly into the raw byte buffer - no Image API call here,
+	## which is what made this slow before (image.set_pixel per pixel).
+	var idx := (y * WIDTH + x) * 4
 
-	## Write directly into image
-	image.set_pixel(x, y, color)
+	framebuffer[idx]     = clampi(roundi(color.r * 255.0), 0, 255)
+	framebuffer[idx + 1] = clampi(roundi(color.g * 255.0), 0, 255)
+	framebuffer[idx + 2] = clampi(roundi(color.b * 255.0), 0, 255)
+	framebuffer[idx + 3] = clampi(roundi(color.a * 255.0), 0, 255)
 
 	dirty = true
 
@@ -603,18 +612,45 @@ func pget(x: int, y: int) -> Color:
 
 	if y < 0 or y >= HEIGHT:
 		return Color.BLACK
-	return framebuffer[y * WIDTH + x]
+
+	var idx := (y * WIDTH + x) * 4
+
+	return Color8(
+		framebuffer[idx],
+		framebuffer[idx + 1],
+		framebuffer[idx + 2],
+		framebuffer[idx + 3]
+	)
 
 
 
-## Clears framebuffer
+## Clears framebuffer.
+## Instead of writing 65536 pixels one at a time, this fills a single
+## pixel's worth of bytes and then doubles that filled region up to the
+## full buffer size using native array copies (append_array/slice).
+## That's ~18 fast native copies instead of 65536 GDScript-level writes.
 func clear(color := Color.BLACK) -> void:
 
-	for y in range(HEIGHT):
-		for x in range(WIDTH):
+	var r := clampi(roundi(color.r * 255.0), 0, 255)
+	var g := clampi(roundi(color.g * 255.0), 0, 255)
+	var b := clampi(roundi(color.b * 255.0), 0, 255)
+	var a := clampi(roundi(color.a * 255.0), 0, 255)
 
-			framebuffer[y * WIDTH + x] = color
-			image.set_pixel(x, y, color)
+	var buf := PackedByteArray()
+	buf.resize(4)
+	buf[0] = r
+	buf[1] = g
+	buf[2] = b
+	buf[3] = a
+
+	var target_size := WIDTH * HEIGHT * 4
+
+	while buf.size() < target_size:
+		var remaining := target_size - buf.size()
+		var chunk_size: int = min(buf.size(), remaining)
+		buf.append_array(buf.slice(0, chunk_size))
+
+	framebuffer = buf
 
 	dirty = true
 
