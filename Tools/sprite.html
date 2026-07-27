@@ -62,7 +62,7 @@
     letter-spacing:0.6px;
   }
   label:first-of-type{margin-top:0;}
-  input[type=number]{
+  input[type=number], input[type=text]{
     width:100%;
     background:#101112;
     border:1px solid var(--line);
@@ -162,6 +162,40 @@
     text-align:center;
     margin-top:8px;
   }
+  .palette-readout{
+    display:flex;
+    flex-wrap:wrap;
+    gap:6px;
+    margin-top:10px;
+  }
+  .swatch{
+    width:22px;
+    height:22px;
+    border-radius:5px;
+    border:1px solid var(--line);
+    position:relative;
+    background-image:
+      linear-gradient(45deg,#333 25%,transparent 25%),
+      linear-gradient(-45deg,#333 25%,transparent 25%),
+      linear-gradient(45deg,transparent 75%,#333 75%),
+      linear-gradient(-45deg,transparent 75%,#333 75%);
+    background-size:8px 8px;
+    background-position:0 0,0 4px,4px -4px,-4px 0px;
+  }
+  .swatch > span{
+    position:absolute;
+    inset:0;
+    border-radius:5px;
+  }
+  .swatch small{
+    position:absolute;
+    bottom:-16px;
+    left:50%;
+    transform:translateX(-50%);
+    font-size:9px;
+    color:var(--dim);
+    font-family:var(--mono);
+  }
   textarea{
     width:100%;
     height:420px;
@@ -233,6 +267,14 @@
 
         <label>Variable name</label>
         <input type="text" id="varName" value="soul" style="font-family:var(--mono);">
+
+        <label id="paletteNameLabel">Palette variable name</label>
+        <input type="text" id="paletteName" value="soul_palette" style="font-family:var(--mono);">
+
+        <div class="checkline">
+          <input type="checkbox" id="hasPalette">
+          <label style="margin:0;text-transform:none;letter-spacing:0;color:var(--text)">I already have a palette (just give me the index array)</label>
+        </div>
       </div>
 
       <div class="panel">
@@ -241,6 +283,7 @@
           <canvas id="preview" width="5" height="5"></canvas>
         </div>
         <div class="dim-readout" id="dimReadout">no image loaded</div>
+        <div class="palette-readout" id="paletteReadout"></div>
         <button id="generateBtn" disabled>Generate array</button>
       </div>
     </div>
@@ -266,11 +309,15 @@ const outH = document.getElementById('outH');
 const lockAspect = document.getElementById('lockAspect');
 const alphaThresh = document.getElementById('alphaThresh');
 const varName = document.getElementById('varName');
+const paletteName = document.getElementById('paletteName');
+const paletteNameLabel = document.getElementById('paletteNameLabel');
+const hasPalette = document.getElementById('hasPalette');
 const generateBtn = document.getElementById('generateBtn');
 const output = document.getElementById('output');
 const copyBtn = document.getElementById('copyBtn');
 const copyStatus = document.getElementById('copyStatus');
 const dimReadout = document.getElementById('dimReadout');
+const paletteReadout = document.getElementById('paletteReadout');
 
 let sourceImg = null;
 let srcAspect = 1;
@@ -305,6 +352,26 @@ dropzone.addEventListener('drop', e => {
   const file = e.dataTransfer.files[0];
   if (file) loadImageFile(file);
 });
+
+// keep palette variable name loosely in sync with the main variable name
+// unless the user has customized it manually
+let paletteNameTouched = false;
+paletteName.addEventListener('input', () => paletteNameTouched = true);
+varName.addEventListener('input', () => {
+  if (!paletteNameTouched) {
+    const base = (varName.value.trim() || 'soul').replace(/[^A-Za-z0-9_]/g, '_');
+    paletteName.value = base + '_palette';
+  }
+});
+
+function syncPaletteFieldState() {
+  const disabled = hasPalette.checked;
+  paletteName.disabled = disabled;
+  paletteName.style.opacity = disabled ? 0.45 : 1;
+  paletteNameLabel.textContent = disabled ? 'Existing palette variable name' : 'Palette variable name';
+}
+hasPalette.addEventListener('change', syncPaletteFieldState);
+syncPaletteFieldState();
 
 function currentDims() {
   let w = Math.max(1, parseInt(outW.value) || 1);
@@ -354,33 +421,94 @@ function generateArray() {
   const {w, h} = currentDims();
   const thresh = Math.max(0, Math.min(255, parseInt(alphaThresh.value) || 0));
   const name = (varName.value.trim() || 'soul').replace(/[^A-Za-z0-9_]/g, '_');
+  const palName = (paletteName.value.trim() || (name + '_palette')).replace(/[^A-Za-z0-9_]/g, '_');
 
   const data = ctx.getImageData(0, 0, w, h).data;
 
-  const lines = [];
-  lines.push(`const ${name} = [`);
+  // build the palette: a de-duplicated list of colors, keyed by their
+  // GDScript literal so identical-looking colors always collapse to
+  // one palette entry regardless of tiny float formatting differences
+  const paletteKeys = [];      // key string -> insertion order
+  const paletteLiterals = [];  // the actual "Color(...)" text per index
+  const keyToIndex = new Map();
+
+  function indexForPixel(r255, g255, b255, a255) {
+    let key, literal;
+    if (a255 <= thresh) {
+      key = 'TRANSPARENT';
+      literal = 'Color.TRANSPARENT';
+    } else {
+      const r = r255/255, g = g255/255, b = b255/255, a = a255/255;
+      if (a255 === 255) {
+        key = `${fmt(r)},${fmt(g)},${fmt(b)}`;
+        literal = `Color(${fmt(r)}, ${fmt(g)}, ${fmt(b)})`;
+      } else {
+        key = `${fmt(r)},${fmt(g)},${fmt(b)},${fmt(a)}`;
+        literal = `Color(${fmt(r)}, ${fmt(g)}, ${fmt(b)}, ${fmt(a)})`;
+      }
+    }
+    if (!keyToIndex.has(key)) {
+      keyToIndex.set(key, paletteLiterals.length);
+      paletteKeys.push(key);
+      paletteLiterals.push(literal);
+    }
+    return keyToIndex.get(key);
+  }
+
+  const rows = [];
   for (let y = 0; y < h; y++) {
     const rowVals = [];
     for (let x = 0; x < w; x++) {
       const i = (y * w + x) * 4;
-      const r255 = data[i], g255 = data[i+1], b255 = data[i+2], a255 = data[i+3];
-      if (a255 <= thresh) {
-        rowVals.push('Color.TRANSPARENT');
-        continue;
-      }
-      const r = r255/255, g = g255/255, b = b255/255, a = a255/255;
-      if (a255 === 255) {
-        rowVals.push(`Color(${fmt(r)},${fmt(g)},${fmt(b)})`);
-      } else {
-        rowVals.push(`Color(${fmt(r)},${fmt(g)},${fmt(b)},${fmt(a)})`);
-      }
+      rowVals.push(indexForPixel(data[i], data[i+1], data[i+2], data[i+3]));
     }
-    const comma = y < h - 1 ? ',' : '';
-    lines.push(`\t[${rowVals.join(',')}]${comma}`);
+    rows.push(rowVals);
   }
+
+  const lines = [];
+  if (hasPalette.checked) {
+    // no palette definition emitted — just document the index order so
+    // it can be matched against the palette that already exists
+    lines.push(`# index order expected in ${palName} (not generated here):`);
+    paletteLiterals.forEach((lit, idx) => {
+      lines.push(`#   ${idx} = ${lit}`);
+    });
+    lines.push('');
+  } else {
+    lines.push(`const ${palName}: Array[Color] = [`);
+    for (const lit of paletteLiterals) {
+      lines.push(`\t${lit},`);
+    }
+    lines.push(']');
+    lines.push('');
+  }
+  lines.push(`const ${name}: Array = [`);
+  rows.forEach((rowVals, y) => {
+    const comma = y < rows.length - 1 ? ',' : '';
+    lines.push(`\t[${rowVals.join(',')}]${comma}`);
+  });
   lines.push(']');
 
   output.value = lines.join('\n');
+
+  // palette swatches, indexed to match the generated array
+  paletteReadout.innerHTML = '';
+  paletteKeys.forEach((key, idx) => {
+    const sw = document.createElement('div');
+    sw.className = 'swatch';
+    if (key !== 'TRANSPARENT') {
+      const parts = key.split(',').map(Number);
+      const [r,g,b,a] = parts;
+      const span = document.createElement('span');
+      span.style.background = `rgba(${Math.round(r*255)},${Math.round(g*255)},${Math.round(b*255)},${a === undefined ? 1 : a})`;
+      sw.appendChild(span);
+    }
+    const label = document.createElement('small');
+    label.textContent = idx;
+    sw.appendChild(label);
+    sw.title = key === 'TRANSPARENT' ? 'transparent' : key;
+    paletteReadout.appendChild(sw);
+  });
 }
 
 generateBtn.addEventListener('click', generateArray);

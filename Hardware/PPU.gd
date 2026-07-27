@@ -844,17 +844,20 @@ func trianglefill(
 
 
 ## Draws sprite from 2D color array
-func sprite(x: int, y: int, sprite_data: Array) -> void:
-
+func sprite(x: int, y: int, sprite_data: Array, palette: Array[Color]) -> void:
 	for py in range(sprite_data.size()):
-
 		for px in range(sprite_data[py].size()):
+			var idx = sprite_data[py][px]
+			if idx == 0:
+				continue
+			pset(x + px, y + py, _safe_palette_color(idx, palette))
 
-			var col = sprite_data[py][px]
-
-			if col.a > 0.0:
-				pset(x + px, y + py, col)
-
+func _safe_palette_color(idx: int, palette: Array[Color]) -> Color:
+	if palette.is_empty():
+		return Color.BLACK
+	if idx >= 0 and idx < palette.size():
+		return palette[idx]
+	return palette[clampi(idx, 0, palette.size() - 1)]
 ## Draw text on screen.
 func text(
 	x: int,
