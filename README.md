@@ -15,6 +15,7 @@ A software-emulated retro hardware stack built in Godot Engine. Includes a CPU, 
 | **CPU** | Orchestrates the system. Manages the PPU and APU, loads ROMs, and drives the main loop. |
 | **PPU** | Software framebuffer renderer. Handles pixel drawing, primitives, and text. |
 | **APU** | Real-time audio synthesizer. Pulse, triangle, and noise channels with a register interface. |
+| **RAM** | memory |
 
 For full documentation, see the **[Wiki](../../wiki)**.
 
