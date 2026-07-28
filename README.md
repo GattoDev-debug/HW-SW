@@ -1,4 +1,7 @@
 # HW-SW
+![Discord](https://img.shields.io/discord/1531702205046980681?style=social&logo=discord&label=Discord%20Server&link=https%3A%2F%2Fdiscord.gg%2FzuVPMm8mYy)
+
+You can join here: [https://discord.gg/zuVPMm8mYy](https://discord.gg/zuVPMm8mYy)
 
 A software-emulated retro hardware stack built in Godot Engine. Includes a CPU, PPU (graphics), and APU (audio) — all written in GDScript. Programs are written as ROM scripts that interface directly with the hardware components.
 
