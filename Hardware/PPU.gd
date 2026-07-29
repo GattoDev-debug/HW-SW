@@ -529,9 +529,8 @@ var display: Sprite2D
 var framebuffer: PackedByteArray = PackedByteArray()
 
 ## True if image changed this frame
-var dirty := false
-
-## Here for compatibility, does nothing.
+var dirty := false 
+## @deprecated: Here for compatibility, does nothing and may be removed in a future revision.
 func render() -> void:
 	pass
 ## Initializes the PPU
@@ -581,9 +580,9 @@ func _process(_delta):
 
 
 
+
 ## Sets a single pixel
 func pset(x: int, y: int, color: Color) -> void:
-
 	## Bounds check
 	if x < 0 or x >= WIDTH:
 		return
@@ -594,7 +593,6 @@ func pset(x: int, y: int, color: Color) -> void:
 	## Write directly into the raw byte buffer - no Image API call here,
 	## which is what made this slow before (image.set_pixel per pixel).
 	var idx := (y * WIDTH + x) * 4
-
 	framebuffer[idx]     = clampi(roundi(color.r * 255.0), 0, 255)
 	framebuffer[idx + 1] = clampi(roundi(color.g * 255.0), 0, 255)
 	framebuffer[idx + 2] = clampi(roundi(color.b * 255.0), 0, 255)
@@ -615,7 +613,7 @@ func pget(x: int, y: int) -> Color:
 
 	var idx := (y * WIDTH + x) * 4
 
-	return Color8(
+	return Color.from_rgba8(
 		framebuffer[idx],
 		framebuffer[idx + 1],
 		framebuffer[idx + 2],
